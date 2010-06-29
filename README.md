@@ -6,7 +6,7 @@ It's a utility used at [occ], colombian computing olympiad, for testing problem'
 
 ## Synopsis ##
 
-    wrapper --execute=filename --problem-id=identifier --os=[xp|vista] [OPTIONS]...
+    wrapper --execute=filename --problem-id=identifier --os=<xp|vista> [OPTIONS]...
 
 ## Description ##
 
@@ -49,7 +49,7 @@ It's a utility used at [occ], colombian computing olympiad, for testing problem'
     --problem-id=identifier, -r identifier
 > set the problem identifier. If `--test-cases-syntax` is not specified, `<identifier>%d` will be used as `format` string.
 
-    --os=[xp|vista], -o [xp|vista]
+    --os=<xp|vista>, -o <xp|vista>
 > set the corresponding Windows' operative system in which `wrapper` will be run. `tskill` or `taskkill` will be used depending on the selection.
 
     --time-limit=milliseconds, -T milliseconds
