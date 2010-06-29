@@ -1,3 +1,14 @@
+/***
+*
+* Written by [Alexander Urieles][aeurielesn].
+*
+* Based on a couple of files from [coreutils].
+*
+*   [aeurielesn]: http://github.com/aeurielesn
+*   [coreutils]: http://www.gnu.org/software/coreutils/
+*
+***/
+
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
@@ -35,11 +46,6 @@ static struct option const long_options[] =
 
 DWORD WINAPI MyThreadFunction( LPVOID lpParam );
 void ErrorHandler(LPTSTR lpszFunction);
-
-typedef struct MyData {
-    int cnt;
-    char args[10][50];
-} MYDATA, *PMYDATA;
 
 int initial_test_case = 1,
     test_cases_step = 1,
@@ -186,7 +192,6 @@ void initialize(int &argc, char **argv)
 int _tmain(int argc, char **argv)
 {
     char cmd[1000], current_test_case[1000];
-    PMYDATA pData;
     DWORD dwThreadId;
     HANDLE hThread;
 
@@ -196,19 +201,6 @@ int _tmain(int argc, char **argv)
     for( int i = 0; i < number_of_test_cases; ++i)
     {
         sprintf(current_test_case, test_cases_syntax, initial_test_case + i * test_cases_step);
-
-        // data allocation
-        pData = (PMYDATA) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(MYDATA));
-
-        // allocation fails
-        if( pData == NULL )
-        {
-            ExitProcess(2);
-        }
-
-        // thread data
-        pData->cnt = 1;
-        strcpy(pData->args[0], execute);
 
         // run pre-execute
         sprintf(cmd, "%s %s %s", pre_execute, problem_id, current_test_case);
@@ -220,7 +212,7 @@ int _tmain(int argc, char **argv)
             NULL,                   // default security attributes
             0,                      // use default stack size
             MyThreadFunction,       // thread function name
-            pData,                  // argument to thread function
+            NULL,                   // argument to thread function
             0,                      // use default creation flags
             &dwThreadId);           // returns the thread identifier
 
@@ -250,11 +242,6 @@ int _tmain(int argc, char **argv)
         }
 
         CloseHandle(hThread);
-        if(pData != NULL)
-        {
-            HeapFree(GetProcessHeap(), 0, pData);
-            pData = NULL;
-        }
 
         // run post-execute
         sprintf(cmd, "%s %s %s", post_execute, problem_id, current_test_case);
@@ -269,7 +256,6 @@ int _tmain(int argc, char **argv)
 DWORD WINAPI MyThreadFunction( LPVOID lpParam )
 {
     HANDLE hStdout;
-    PMYDATA pData;
 
     TCHAR msgBuf[BUF_SIZE];
     size_t cchStringSize;
@@ -279,10 +265,8 @@ DWORD WINAPI MyThreadFunction( LPVOID lpParam )
     if( hStdout == INVALID_HANDLE_VALUE )
         return 1;
 
-    pData = (PMYDATA)lpParam;
-
-    printf("%s\n", pData->args[0]);
-    system(pData->args[0]);
+    printf("%s\n", execute);
+    system(execute);
 
     return 0;
 }
