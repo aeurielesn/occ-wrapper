@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include <tlhelp32.h>
 
+#define MAX_STR_LEN 100
 #define MAX_THREADS 3
 #define BUF_SIZE 255
 
@@ -45,31 +46,57 @@ int initial_test_case = 1,
     number_of_test_cases = 10,
     time_limit = 1000;
 
-char *execute,
-    *pre_execute,
-    *post_execute,
-    *test_cases_syntax,
-    *problem_id;
+char execute[MAX_STR_LEN],
+    pre_execute[MAX_STR_LEN],
+    post_execute[MAX_STR_LEN],
+    test_cases_syntax[MAX_STR_LEN],
+    problem_id[MAX_STR_LEN];
 
 enum os {
     xp, vista
 } os;
 
-int is_long_option(char *arg)
+enum option_type {
+    none, short_option, long_option
+};
+
+int get_option(char *arg, option_type *type, char *value)
 {
     int ambigous = 0, ret = -1;
-    char *buf;
+    char buf[100], buf2[100];
+
+    if(type != NULL)
+        *type = none;
+
     if(arg[0] != '\0')
     {
-        if(arg[0] == '-' && arg[1] != '\0')
+        if((arg[0] == '-') && (arg[1] != '\0'))
         {
-            if(arg[0] == '-' && arg[1] == '-' && arg[2] != '\0')
+            if(arg[1] == '-')
             {
-                buf = arg + 2;
+                sscanf(arg, "--%[^=]=%s", buf, buf2);
                 for(int i = 0; long_options[i].name != NULL ; ++i)
                 {
                     if(strcmp(buf, long_options[i].name) == 0)
                     {
+                        if(type != NULL)
+                            *type = long_option;
+                        if(value != NULL)
+                            strcpy(value, buf2);
+                        ret = long_options[i].val;
+                        ambigous++;
+                    }
+                }
+            }
+            else if(arg[1] != '-')
+            {
+                sscanf(arg, "-%s", buf);
+                for(int i = 0; long_options[i].name != NULL ; ++i)
+                {
+                    if(buf[0] == long_options[i].val)
+                    {
+                        if(type != NULL)
+                            *type = short_option;
                         ret = long_options[i].val;
                         ambigous++;
                     }
@@ -80,85 +107,76 @@ int is_long_option(char *arg)
     return (ambigous > 1)?-1:ret;
 }
 
-void check_arguments(int ini, int cnt, int &argc, char **argv)
+void check_short_option_argument(int i, int &argc, char **argv)
 {
-    for(int i=ini+1; i<=ini+cnt; ++i)
+    if((i>=argc) || (get_option(argv[i], NULL, NULL)!=-1))
     {
-        if((i>=argc) || (is_long_option(argv[i])!=-1))
-        {
-            printf("'%s' has invalid arguments.\n", argv[ini]);
-            exit(1);
-        }
+        printf("'%s' is not a valid argument.\n", argv[i]);
+        exit(1);
     }
 }
 
 void initialize(int &argc, char **argv)
 {
+    char buf[100];
+    option_type curr_type;
     for(int i=1; i<argc; ++i)
     {
-        int long_option = is_long_option(argv[i]);
-        printf("[%d] %s %c\n", i, argv[i], long_option);
+        int curr_option = get_option(argv[i], &curr_type, buf);
+//        printf("[%d] %s %c %s %d\n", i, argv[i], curr_option, buf, curr_type);
 
-        switch(long_option)
+        if(curr_type == short_option)
         {
-            case 'i': // initial-test-case
-            case 's': // test-case-step
-            case 'x': // execute
-            case 't': // number-of-test-cases
-            case 'p': // pre-execute
-            case 'P': // post-execute
-            case 'y': // test-cases-syntax
-            case 'r': // problem-id
-            case 'T': // time-limit
-                check_arguments(i, 1, argc, argv);
-                break;
-            case 'o': // os
-                check_arguments(i, 1, argc, argv);
-                if(strcmp("xp", argv[i+1])!=0 && strcmp("vista", argv[i+1])!=0)
-                    long_option = -1;
+            check_short_option_argument(i+1, argc, argv);
+            strcpy(buf, argv[++i]);
+            switch(curr_option)
+            {
+                case 'o': // os
+                    if(strcmp("xp", argv[i+1])!=0 && strcmp("vista", argv[i+1])!=0)
+                        curr_option = -1;
+            }
         }
 
-        if(long_option == -1)
+        if(curr_option == -1)
         {
             printf("'%s' is not a valid option.\n", argv[i]);
             exit(1);
         }
 
-        switch(long_option)
+        switch(curr_option)
         {
             case 'i': // initial-test-case
-                initial_test_case = atoi(argv[++i]);
+                initial_test_case = atoi(buf);
                 break;
             case 's': // test-case-step
-                test_cases_step = atoi(argv[++i]);
+                test_cases_step = atoi(buf);
                 break;
             case 'x': // execute
-                execute = argv[++i];
+                strcpy(execute, buf);
                 break;
             case 't': // number-of-test-cases
-                number_of_test_cases = atoi(argv[++i]);
+                number_of_test_cases = atoi(buf);
                 break;
             case 'p': // pre-execute
-                pre_execute = argv[++i];
+                strcpy(pre_execute, buf);
                 break;
             case 'P': // post-execute
-                post_execute = argv[++i];
+                strcpy(post_execute, buf);
                 break;
             case 'y': // test-cases-syntax
-                test_cases_syntax = argv[++i];
+                strcpy(test_cases_syntax, buf);
                 break;
             case 'r': // problem-id
-                problem_id = argv[++i];
+                strcpy(problem_id, buf);
                 break;
             case 'o': // os
-                ++i;
-                if(strcmp("xp", argv[i])==0)
+                if(strcmp("xp", buf)==0)
                     os = xp;
-                else if(strcmp("vista", argv[i])==0)
+                else if(strcmp("vista", buf)==0)
                     os = vista;
                 break;
             case 'T': // time-limit
-                time_limit = atoi(argv[++i]);
+                time_limit = atoi(buf);
                 break;
         }
 
