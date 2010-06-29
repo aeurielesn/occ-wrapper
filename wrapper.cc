@@ -44,7 +44,7 @@ static struct option const long_options[] =
     {NULL, 0, 0}
 };
 
-DWORD WINAPI MyThreadFunction( LPVOID lpParam );
+DWORD WINAPI ExecutionThread( LPVOID lpParam );
 void ErrorHandler(LPTSTR lpszFunction);
 
 int initial_test_case = 1,
@@ -211,7 +211,7 @@ int _tmain(int argc, char **argv)
         hThread = CreateThread(
             NULL,                   // default security attributes
             0,                      // use default stack size
-            MyThreadFunction,       // thread function name
+            ExecutionThread,       // thread function name
             NULL,                   // argument to thread function
             0,                      // use default creation flags
             &dwThreadId);           // returns the thread identifier
@@ -253,7 +253,7 @@ int _tmain(int argc, char **argv)
 }
 
 
-DWORD WINAPI MyThreadFunction( LPVOID lpParam )
+DWORD WINAPI ExecutionThread( LPVOID lpParam )
 {
     HANDLE hStdout;
 
