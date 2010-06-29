@@ -38,6 +38,7 @@ It's a utility used at [occ], colombian computing olympiad, for testing problem'
 
 > A default `post.bat` could be:
 > >     fc %1.sal %2.sal
+> >     if not errorlevel 1 echo %2 YES >> outfile
 > >     if errorlevel 1 echo %2 NO >> outfile
 
     --test-cases-syntax=format, -y format
