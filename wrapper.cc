@@ -22,6 +22,7 @@ struct option
 {
     const char *name;
     int has_arg;
+    bool was_read;
     int val;
 };
 
@@ -29,19 +30,19 @@ struct option
 # define required_argument      1
 # define optional_argument      2
 
-static struct option const long_options[] =
+static struct option /* const */ long_options[] =
 {
-    {"initial-test-case", optional_argument, 'i'},
-    {"test-case-step", optional_argument, 's'},
-    {"number-of-test-cases", optional_argument, 't'},
-    {"execute", required_argument, 'x'},
-    {"pre-execute", optional_argument, 'p'},
-    {"post-execute", optional_argument, 'P'},
-    {"test-cases-syntax", optional_argument, 'y'},
-    {"problem-id", required_argument, 'r'},
-    {"os", required_argument, 'o'},
-    {"time-limit", optional_argument, 'T'},
-    {NULL, 0, 0}
+    {"initial-test-case", optional_argument, false, 'i'},
+    {"test-case-step", optional_argument, false, 's'},
+    {"number-of-test-cases", optional_argument, false, 't'},
+    {"execute", required_argument, false, 'x'},
+    {"pre-execute", optional_argument, false, 'p'},
+    {"post-execute", optional_argument, false, 'P'},
+    {"test-cases-syntax", optional_argument, false, 'y'},
+    {"problem-id", required_argument, false, 'r'},
+    {"os", required_argument, false, 'o'},
+    {"time-limit", optional_argument, false, 'T'},
+    {NULL, 0, 0, 0}
 };
 
 DWORD WINAPI ExecutionThread( LPVOID lpParam );
@@ -89,6 +90,7 @@ int get_option(char *arg, option_type *type, char *value)
                             *type = long_option;
                         if(value != NULL)
                             strcpy(value, buf2);
+                        long_options[i].was_read = true;
                         ret = long_options[i].val;
                         ambigous++;
                     }
@@ -103,6 +105,7 @@ int get_option(char *arg, option_type *type, char *value)
                     {
                         if(type != NULL)
                             *type = short_option;
+                        long_options[i].was_read = true;
                         ret = long_options[i].val;
                         ambigous++;
                     }
@@ -110,7 +113,7 @@ int get_option(char *arg, option_type *type, char *value)
             }
         }
     }
-    return (ambigous > 1)?-1:ret;
+    return (ambigous > 1) ? -1 : ret;
 }
 
 void check_short_option_argument(int i, int &argc, char **argv)
@@ -118,6 +121,51 @@ void check_short_option_argument(int i, int &argc, char **argv)
     if((i>=argc) || (get_option(argv[i], NULL, NULL)!=-1))
     {
         printf("'%s' is not a valid argument.\n", argv[i]);
+        exit(1);
+    }
+}
+
+void load_defaults()
+{
+    bool quit = false;
+    for(int i = 0; long_options[i].name != NULL ; ++i)
+    {
+        if(!long_options[i].was_read && long_options[i].has_arg == required_argument)
+        {
+            quit = true;
+            printf("'--%s' is required.\n", long_options[i].name);
+        }
+        else if(!long_options[i].was_read)
+        {
+            switch(long_options[i].val)
+            {
+                case 'i': // initial-test-case
+                    initial_test_case = 1;
+                    break;
+                case 's': // test-case-step
+                    test_cases_step = 1;
+                    break;
+                case 't': // number-of-test-cases
+                    number_of_test_cases = 10;
+                    break;
+                case 'p': // pre-execute
+                    strcpy(pre_execute, "pre.bat");
+                    break;
+                case 'P': // post-execute
+                    strcpy(post_execute, "post.bat");
+                    break;
+                case 'y': // test-cases-syntax
+                    strcpy(test_cases_syntax, problem_id);
+                    strcat(test_cases_syntax, "%d");
+                    break;
+                case 'T': // time-limit
+                    time_limit = 1000;
+                    break;
+            }
+        }
+    }
+    if(quit)
+    {
         exit(1);
     }
 }
@@ -196,6 +244,8 @@ int _tmain(int argc, char **argv)
     HANDLE hThread;
 
     initialize(argc, argv);
+
+    load_defaults();
 
     // run test cases
     for( int i = 0; i < number_of_test_cases; ++i)
