@@ -21,12 +21,12 @@ static struct option const long_options[] =
 {
     {"initial-test-case", optional_argument, 'i'},
     {"test-case-step", optional_argument, 's'},
-    {"number-of-test-cases", required_argument, 't'},
+    {"number-of-test-cases", optional_argument, 't'},
     {"execute", required_argument, 'x'},
-    {"pre-execute", required_argument, 'p'},
-    {"post-execute", required_argument, 'P'},
-    {"test-cases-syntax", required_argument, 'y'},
-    {"prog-id", required_argument, 'r'},
+    {"pre-execute", optional_argument, 'p'},
+    {"post-execute", optional_argument, 'P'},
+    {"test-cases-syntax", optional_argument, 'y'},
+    {"problem-id", required_argument, 'r'},
     {"os", required_argument, 'o'},
     {"time-limit", optional_argument, 'T'},
     {NULL, 0, 0}
@@ -42,15 +42,14 @@ typedef struct MyData {
 
 int initial_test_case = 1,
     test_cases_step = 1,
-    number_of_test_cases = 0,
+    number_of_test_cases = 10,
     time_limit = 1000;
 
 char *execute,
     *pre_execute,
     *post_execute,
     *test_cases_syntax,
-    *out_file_name,
-    *prog_id;
+    *problem_id;
 
 enum os {
     xp, vista
@@ -95,7 +94,6 @@ void check_arguments(int ini, int cnt, int &argc, char **argv)
 
 void initialize(int &argc, char **argv)
 {
-    printf("argc: %d\n", argc);
     for(int i=1; i<argc; ++i)
     {
         int long_option = is_long_option(argv[i]);
@@ -110,7 +108,7 @@ void initialize(int &argc, char **argv)
             case 'p': // pre-execute
             case 'P': // post-execute
             case 'y': // test-cases-syntax
-            case 'r': // prog-id
+            case 'r': // problem-id
             case 'T': // time-limit
                 check_arguments(i, 1, argc, argv);
                 break;
@@ -149,8 +147,8 @@ void initialize(int &argc, char **argv)
             case 'y': // test-cases-syntax
                 test_cases_syntax = argv[++i];
                 break;
-            case 'r': // prog-id
-                prog_id = argv[++i];
+            case 'r': // problem-id
+                problem_id = argv[++i];
                 break;
             case 'o': // os
                 ++i;
@@ -195,7 +193,7 @@ int _tmain(int argc, char **argv)
         strcpy(pData->args[0], execute);
 
         // run pre-execute
-        sprintf(cmd, "%s %s %s", pre_execute, prog_id, current_test_case);
+        sprintf(cmd, "%s %s %s", pre_execute, problem_id, current_test_case);
         printf("%s\n", cmd);
         system(cmd);
 
@@ -241,7 +239,7 @@ int _tmain(int argc, char **argv)
         }
 
         // run post-execute
-        sprintf(cmd, "%s %s %s", post_execute, prog_id, current_test_case);
+        sprintf(cmd, "%s %s %s", post_execute, problem_id, current_test_case);
         printf("%s\n", cmd);
         system(cmd);
     }
