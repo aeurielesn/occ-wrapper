@@ -6,7 +6,7 @@ It's a utility used at [occ], colombian computing olympiad, for testing problem'
 
 ## Synopsis ##
 
-    wrapper --execute=filename --problem-id=value --os=[xp|vista] [OPTIONS]...
+    wrapper --execute=filename --problem-id=identifier --os=[xp|vista] [OPTIONS]...
 
 ## Description ##
 
