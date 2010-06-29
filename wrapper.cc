@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <tlhelp32.h>
+#include <unistd.h>
 
 #define MAX_STR_LEN 100
 #define MAX_THREADS 3
@@ -237,6 +238,38 @@ void initialize(int &argc, char **argv)
     }
 }
 
+bool check_file_existence(char *filename)
+{
+    if( access( filename, F_OK ) == -1 ) {
+        return false;
+    }
+    return true;
+}
+
+void check_if_files_exists()
+{
+    bool y = true;
+    if(!check_file_existence(pre_execute))
+    {
+        y = false;
+        printf("'%s' can not be found.\n", execute);
+    }
+    if(!check_file_existence(execute))
+    {
+        y = false;
+        printf("'%s' can not be found.\n", execute);
+    }
+    if(!check_file_existence(post_execute))
+    {
+        y = false;
+        printf("'%s' can not be found.\n", execute);
+    }
+    if(!y)
+    {
+        exit(1);
+    }
+}
+
 int _tmain(int argc, char **argv)
 {
     char cmd[1000], current_test_case[1000];
@@ -246,6 +279,8 @@ int _tmain(int argc, char **argv)
     initialize(argc, argv);
 
     load_defaults();
+
+    check_if_files_exists();
 
     // run test cases
     for( int i = 0; i < number_of_test_cases; ++i)
