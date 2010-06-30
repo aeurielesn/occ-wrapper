@@ -10,7 +10,19 @@ It's a utility used at [occ], colombian computing olympiad, for testing problem'
 
 ## Description ##
 
-(pending)
+`wrapper` is useful to restrict the execution of programs for a period of time in _milliseconds_ unlike [choice] and [ping] MS-DOS commands of Windows systems which let you pause execution for a fixed time only in [seconds][delays] against test cases.
+
+[delays]: http://www.allenware.com/icsw/icswref.htm#WaitsFixed
+[choice]: http://www.allenware.com/icsw/icswref.htm#WaitsFixedChoice
+[ping]: http://www.allenware.com/icsw/icswref.htm#WaitsFixedPing
+
+`wrapper` allows you to do custom pre-processing such as copy or delete temporal files and input/output files before the main process (`--execute`) execution. In the same way, you can do post-processing after the finalization of the main process.
+
+As a practical matter, `wrapper` helps you to run a batch testing process for a program against a chosen number of test cases and a specified period of time, the program will be forcefully terminated to free system resources when limit time expires.
+
+`wrapper` relies in [WaitForSingleObject] function to time program execution and in `tskill` or `taskkill` for processes termination.
+
+[WaitForSingleObject]: http://msdn.microsoft.com/en-us/library/bb202783.aspx
 
 ## Options ##
 
