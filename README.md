@@ -39,8 +39,8 @@ As a practical matter, `wrapper` helps you to run a batch testing process for a 
 > set the file to be executed before running `--execute`. This file will be called with the following arguments: `<program identifier> <current test case string>`. Default `filename` is `pre.bat`.
 
 > A default `pre.bat` could be:
-> >     del %1.sal
-> >     copy %2.ent %1.ent
+>>     del %1.sal
+>>     copy %2.ent %1.ent
 
     --execute=filename, -x filename
 > set the file to be executed after the finalization of `--pre-execute`. Generally, it's the compiled source code to be run against the test cases.
@@ -49,9 +49,9 @@ As a practical matter, `wrapper` helps you to run a batch testing process for a 
 > set the file to be executed after the finalization of `--execute`. This file will be called with the following arguments: `<program identifier> <current test case string>`. Default `filename` is `post.bat`.
 
 > A default `post.bat` could be:
-> >     fc %1.sal %2.sal
-> >     if not errorlevel 1 echo %2 YES >> outfile
-> >     if errorlevel 1 echo %2 NO >> outfile
+>>     fc %1.sal %2.sal
+>>     if not errorlevel 1 echo %2 YES >> outfile
+>>     if errorlevel 1 echo %2 NO >> outfile
 
     --test-cases-syntax=format, -y format
 > set the format string to be used for generating the test cases' filenames. The `format` might be specified as described in [printf].
